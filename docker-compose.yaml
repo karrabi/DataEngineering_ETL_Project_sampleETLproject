@@ -1,0 +1,107 @@
+version: '3'
+services:
+  logserver:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgresuser
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgresuser"]
+      interval: 5s
+      retries: 5
+    restart: always
+
+  oltpserver:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgresuser
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres-oltp-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgresuser"]
+      interval: 5s
+      retries: 5
+    restart: always
+    
+  olapserver:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgresuser
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres-olap-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgresuser"]
+      interval: 5s
+      retries: 5
+    restart: always
+    
+  pgadmin4:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadminuser@project.website
+      - PGADMIN_DEFAULT_PASSWORD=pgadminpassword
+    ports:
+      - "15432:80"
+
+  app_extract:
+    build: extract/.
+    restart: always
+    volumes:
+      - ./extract/extract_project:/app
+    depends_on:
+      - logserver
+      - oltpserver
+      - olapserver
+
+  app_transform:
+    build: transform/.
+    restart: always
+    volumes:
+      - ./transform/transform_project:/app
+    depends_on:
+      - logserver
+      - oltpserver
+      - olapserver
+      
+  app_load:
+    build: load/.
+    restart: always
+    volumes:
+      - ./load/load_project:/app
+    depends_on:
+      - logserver
+      - oltpserver
+      - olapserver
+      
+      
+  ftp-server:
+    environment:
+      - FTP_PASS=ftp_password
+      - FTP_USER=ftp_username
+    image: garethflowers/ftp-server
+    ports:
+      - '20-21:20-21/tcp'
+      - '40000-40009:40000-40009/tcp'
+    restart: always
+    volumes:
+      - '/data:/home/user'
+      
+
+volumes:
+  postgres-db-volume:
+  postgres-oltp-db-volume:
+  postgres-olap-db-volume:

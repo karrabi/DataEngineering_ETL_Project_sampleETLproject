@@ -1,0 +1,7 @@
+Dockerfile
+.dockerignore
+.git
+.idea
+__pycache__
+vEnv
+postgres-db-volume
