@@ -93,12 +93,13 @@ def transformData(new_data:pd.DataFrame, symbol_name):
     vcl.RemoveDuplicateValues(keep='first')
     vcl.RemoveNanValues(how='any')
 
-    __monolithColumns(data_frame=new_data)
     
     fiveMinResData = resampleDataToFiveMin(dataframe=new_data)
     fiveMinResData['symbol'] = symbol_name
     fiveMinResData['resolution'] = '5min'
     
+    __monolithColumns(data_frame=new_data)
+
     new_data['symbol'] = symbol_name
     new_data['resolution'] = '1min'
     
