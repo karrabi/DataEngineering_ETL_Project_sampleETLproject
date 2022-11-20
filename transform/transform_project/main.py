@@ -51,8 +51,19 @@ def __monolithColumns(data_frame):
     data_frame.rename(columns=columns, inplace=True)
 
 
-
-def transformData(new_data, symbol_name):
+def resampleDataToFiveMin(dataframe:pd.DataFrame):
+    fiveMinData = dataframe.copy(deep=True)
+    
+    fiveMinData['timestamp'] = pd.to_datetime(fiveMinData['t'], unit='s')
+    fiveMinData.set_index('timestamp', inplace=True)
+    
+    agg_dict = {'o': 'first', 'h': 'max', 'l': 'min', 'c': 'last', 'v': 'mean', 't': 'min'}
+    fiveMinData = fiveMinData.resample('5T').agg(agg_dict)
+    fiveMinData.reset_index(drop=True, inplace=True)
+    
+    return fiveMinData
+    
+def transformData(new_data:pd.DataFrame, symbol_name):
     
     vck = ValueChecker(dataframe=new_data, reset_index=True)
     vck.CheckFloatValues('o',change_type_to_float=True,
@@ -84,20 +95,30 @@ def transformData(new_data, symbol_name):
 
     __monolithColumns(data_frame=new_data)
     
+    fiveMinResData = resampleDataToFiveMin(dataframe=new_data)
+    fiveMinResData['symbol'] = symbol_name
+    fiveMinResData['resolution'] = '5min'
+    
     new_data['symbol'] = symbol_name
     new_data['resolution'] = '1min'
     
+    new_data = new_data.append(fiveMinResData, ignore_index=True)
+    
     return new_data
     
-    
-def saveData(symbol_name, transformed_data):
-    # _from = min(transformed_data['timestamp'])
-    # _to = max(transformed_data['timestamp'])
-    # filename = '{}_{}_{}.csv'.format(symbol_name, _from, _to)
+
+def saveDataToOLTPDatabase(symbol_name, transformed_data):
     Log('{} New Records of {} Retrived for Transform'.format(transformed_data.shape[0], symbol_name))
     save_to_database(data=transformed_data)
-    # transformed_data.to_csv('{}{}'.format(TEMP_PATH,filename))
-    # fm.SendFile(TRANSFORMED_PATH, TEMP_PATH,filename)
+
+
+
+def saveDataToCSVFile(symbol_name, transformed_data):
+    _from = min(transformed_data['timestamp'])
+    _to = max(transformed_data['timestamp'])
+    filename = '{}_{}_{}.csv'.format(symbol_name, _from, _to)
+    transformed_data.to_csv('{}{}'.format(TEMP_PATH,filename))
+    fm.SendFile(TRANSFORMED_PATH, TEMP_PATH,filename)
     
 def archivedNewExtactedData(next_new_files, ignored, symbol_name):
     if len(ignored) > 0:
@@ -117,7 +138,7 @@ def transformNewExtractedData():
             
             transformed_data = transformData(new_data, symbol_name)
 
-            saveData(symbol_name, transformed_data)
+            saveDataToOLTPDatabase(symbol_name, transformed_data)
 
             archivedNewExtactedData(next_new_files, ignored, symbol_name)
 
