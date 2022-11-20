@@ -95,6 +95,9 @@ def transformData(new_data:pd.DataFrame, symbol_name):
 
     
     fiveMinResData = resampleDataToFiveMin(dataframe=new_data)
+    
+    __monolithColumns(data_frame=fiveMinResData)
+    
     fiveMinResData['symbol'] = symbol_name
     fiveMinResData['resolution'] = '5min'
     
