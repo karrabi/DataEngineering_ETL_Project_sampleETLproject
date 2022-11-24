@@ -100,7 +100,7 @@ def listNextExtractedFile(path):
 
             
             
-def archiveFiles(source_path, destination_path, filesls):
+def archiveFiles(source_path, destination_path, temp_path, filesls):
     try:
         if not isLoggedin():
             Login(source_path)
@@ -108,5 +108,6 @@ def archiveFiles(source_path, destination_path, filesls):
             setCurrentPath(source_path)
             for file in filesls:
                 FTP.rename('{}/{}'.format(source_path,file) , '{}/{}'.format(destination_path,file))
+                os.remove(temp_path + file)
     except Exception as e:
         print(e)

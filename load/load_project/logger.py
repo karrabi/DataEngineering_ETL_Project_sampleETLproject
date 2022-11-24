@@ -16,8 +16,8 @@ def Log(message:str):
     _t = '001'
     try:
         sql_query = """
-        INSERT INTO public.logs(message)
-        VALUES ('{}');
+        INSERT INTO public.logs(server_id, message)
+        VALUES (3, '{}');
         """.format(prepareMessage(message))
         connection = engine.connect()
         connection.execute(sql_query)

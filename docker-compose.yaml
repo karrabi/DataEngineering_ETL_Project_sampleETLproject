@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - ./postgres-db-volume:/var/lib/postgresql/data
+      - ./init_log.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -24,6 +25,7 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - ./postgres-oltp-db-volume:/var/lib/postgresql/data
+      - ./init_oltp.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5433:5432"
     healthcheck:
@@ -31,7 +33,10 @@ services:
       interval: 5s
       retries: 5
     restart: always
-    
+    depends_on:
+      - logserver
+      
+      
   olapserver:
     image: postgres:13
     environment:
@@ -40,6 +45,7 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - ./postgres-olap-db-volume:/var/lib/postgresql/data
+      - ./init_olap.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5434:5432"
     healthcheck:
@@ -47,7 +53,10 @@ services:
       interval: 5s
       retries: 5
     restart: always
-    
+    depends_on:
+      - logserver
+      - oltpserver
+      
   pgadmin4:
     image: dpage/pgadmin4
     restart: always
@@ -92,13 +101,11 @@ services:
     environment:
       - FTP_PASS=ftp_password
       - FTP_USER=ftp_username
-    image: garethflowers/ftp-server
+    build: ftp-server/.
     ports:
       - '20-21:20-21/tcp'
       - '40000-40009:40000-40009/tcp'
     restart: always
-    volumes:
-      - '/data:/home/user'
       
 
 volumes:

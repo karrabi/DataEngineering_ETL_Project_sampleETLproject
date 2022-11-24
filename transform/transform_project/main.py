@@ -85,7 +85,8 @@ def transformData(new_data:pd.DataFrame, symbol_name):
     cck = ColumnChecker(dataframe=new_data, necessary_columns=['c', 'h', 'o', 'l', 't', 'v'])
     cck.CheckNecessaryColumns()
     
-    ccl = ColumnCleaner(dataframe=new_data, reset_index=False, necessary_columns=['c', 'h', 'o', 'l', 't', 'v'])
+    ccl = ColumnCleaner(dataframe=new_data, reset_index=False,
+                        necessary_columns=['c', 'h', 'o', 'l', 't', 'v'])
     ccl.RemoveUnnecessaryColumns()
     
     
@@ -129,7 +130,7 @@ def archivedNewExtactedData(next_new_files, ignored, symbol_name):
         next_new_files = [x for x in next_new_files if x not in ignored]
 
     Log('{} New Extracted Files of {} Archived after Transform'.format(len(next_new_files), symbol_name))
-    fm.archiveFiles(EXTRACTED_PATH, ARCHIVE_PATH, next_new_files)
+    fm.archiveFiles(EXTRACTED_PATH, ARCHIVE_PATH, TEMP_PATH, next_new_files)
     
 def transformNewExtractedData():
     while True:
