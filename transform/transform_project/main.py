@@ -13,18 +13,6 @@ ARCHIVE_PATH = '/archivefromapi1min'
 TRANSFORMED_PATH = '/transformedfromapi1min'
 TEMP_PATH = 'temp/'
 
-def resolveSymbols():
-    symbols = pd.read_csv('symbols.csv')
-    return symbols
-
-
-def resolve_from(symbol):
-    history = pd.read_csv('summary.csv')
-    history = history[history['symbol']==symbol]
-    if history.shape[0] > 0:
-        return max(history['to']) + 1
-    else:
-        return int(time.time()) - 8053600
 
 def readData(files_list):
     new_data = pd.DataFrame()
