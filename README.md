@@ -193,10 +193,12 @@ function and then create an object of CryptoFetcher class and append it to threa
 > In ***retrive_from*** function, if a symbol has history data inside **summary.csv** file then the last timestamp is read from it and the function returns the last timestamp plus one to prevent record duplication in new data request otherwise if the symbol has no data in **summary.csv** file then the function assumes that the symbol is newly added to project and return a timestamp corresponding to about 90 days ago to retrieve historical data requires for further processes
 
 after all objects creates for all symbols, all thread joins the main thread
-### Part 2 (extract new Data):
-**run** function iterate over ***Symbols*** list and create an object of **CryptoFetcher** for each one.
 
-**CryptoFetcher** is a Thread base Object that connect to the [Finnhub](https://finnhub.io) web API and download specific Symbol Candle Data from it.
+### Part 2 (extract new Data):
+
+**run** function iterate over ***Symbols*** list and create an object of **CryptoFetcher** for each symbol.
+
+[**CryptoFetcher**](./extract/extract_project/fetcher.py) is a Thread base Object that connect to the [Finnhub](https://finnhub.io) web API and download specific Symbol Candle Data from it.
 
 Then stores Downloaded Data as ***.csv*** file with Symbol name followed by start timestamp and end timestamp as filename. _(e.g.  BINANCE-1INCHUSDT_1668093311_1668093300.csv)_
 
@@ -204,27 +206,66 @@ file is stored in ***/files*** folder.
 
 ### Part 3 
 After All Data Extracted from Web API and store as ***.csv*** files then **moveFilesToDataLake** module is sent all new created files to DataLake _(FTP Server in here)_
+```python
+def moveFilesToDataLake(path):
+    files = next(walk(path), (None, None, []))[2]
+    for file in files:
+        SendFile( ... )
+```
+```python   
+def SendFile( ... ):
+    ...
+    with open(path + filename, 'rb') as file:
+        FTP.storbinary('STOR ' + filename, file)
+```
+After sending each file to DataLake, it delete file from local **files** folder :
 
+```python
+    os.remove(path + filename)   
+```
+before try to send or receive file to and from FTP Server, app always checks the FTP connection and current directory:
 
+```python
+def Login():
+    global FTP
+    ...
+        FTP = ftplib.FTP(FTP_HOST, FTP_USERNAME, FTP_PASSWORD)
+        FTP.cwd('fromapi1min')
+    ...
+```
 
 # TRANSFORM
-this is the transform part
+In ***Transform project*** inside a forever loop, `filemanager >> listNextExtractedFile` looking for new extracted files from ***Extract project*** and if find any then start to do following processes to new files:
+
+1. read all new files content (readData)
+2. transform data to especific format and conditions(transformData)
+3. send data to OLTP Database (saveDataToOLTPDatabase)
+4. archive listed new files (archivedNewExtactedData)
+
+more details:
+- listNextExtractedFile
+first of all it creates a list of all new extracted files inside FTP:
+```python
+def readNewExtractedFiles(path):
+    filesls = []
+    ...
+    filesls = FTP.nlst()
+    ...
+    return filesls
+```
+
+Then it creates a second list of files with a specific pattern (e.g. All files start with `BINANCE-1INCHUSDT`) inside DataLake (FTP Server in here) 
+the process is as follows:
+    -   read the very first file in FTP
+    -   read all similar files base on the filename
+    -   returns a list of files with of same `Symbol name`
+then the second list returns for further processes.
 
 
+
+
+readData:
+reads 
 # LOAD
 this is the transform part
 
-
-```python
-def Log(message:str):
-    _t = '001'
-    try:
-        sql_query = """
-        INSERT INTO public.logs(server_id, message)
-        VALUES (1,'{}');
-        """.format(prepareMessage(message))
-        connection = engine.connect()
-        connection.execute(sql_query)
-    except Exception as e:
-        print('Error saving log to database: {} ///////// {}'.format(prepareMessage(sql_query), prepareMessage(e)))
-```
