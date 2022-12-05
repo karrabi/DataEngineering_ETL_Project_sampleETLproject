@@ -8,12 +8,12 @@ import filemanager as fm
 FILE_PATH = 'files/'
 
 
-def resolveSymbols():
+def retriveSymbols():
     symbols = pd.read_csv('symbols.csv')
     return symbols
 
 
-def resolve_from(symbol):
+def retrive_from(symbol):
     history = pd.read_csv('summary.csv')
     history = history[history['symbol']==symbol]
     if history.shape[0] > 0:
@@ -29,7 +29,7 @@ def run(i, symbols, _to):
     Log(message=msg)
     for index, row in symbols.iterrows():
         symbol = row['symbol']
-        _from = resolve_from(symbol=symbol)
+        _from = retrive_from(symbol=symbol)
         thread = CryptoFetcher(symbol=symbol, resolutiuon=resolutiuon, _from=_from, _to=_to)
 
         threads.append(thread)
@@ -42,7 +42,7 @@ def run(i, symbols, _to):
 
 def main():
 
-    symbols = resolveSymbols()
+    symbols = retriveSymbols()
     i = 1
     
     fm.Login()
