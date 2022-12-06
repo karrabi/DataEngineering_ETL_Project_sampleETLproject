@@ -237,10 +237,10 @@ def Login():
 # TRANSFORM
 In ***Transform project*** inside a forever loop, `filemanager >> listNextExtractedFile` looking for new extracted files from ***Extract project*** and if find any then start to do following processes to new files:
 
-1. read all new files content (readData)
-2. transform data to especific format and conditions(transformData)
-3. send data to OLTP Database (saveDataToOLTPDatabase)
-4. archive listed new files (archivedNewExtactedData)
+1. read all new files content ([readData](./README.md#readdata))
+2. transform data to especific format and conditions ([transformData](./README.md#transformdata))
+3. send data to OLTP Database ([saveDataToOLTPDatabase])
+4. archive listed new files ([archivedNewExtactedData])
 
 more details:
 - listNextExtractedFile
@@ -261,11 +261,67 @@ the process is as follows:
     -   returns a list of files with of same `Symbol name`
 then the second list returns for further processes.
 
+### readData:
+Download each file in list to local machine **(via `filemanager >> RetriveFile`)** and then appends its content to **new_data** Pandas DataFrame.
+Finally returns the **new_data**.
 
+### transformData:
+This function uses simpledataengineeringtoolkit library to do:
+1. Checks the Data Values through `ValueChecker` class:
+    - _CheckFloatValues_ for 4 columns of Data
+    - _CheckUnixTimestampValues_ of 1 columns of Data
+2. Checks columns through `ColumnChecker` class:
+    - _CheckNecessaryColumns_ of Data
+3. Cleans data through `ColumnCleaner` class:
+    - _RemoveUnnecessaryColumns_ of Data
+4. Cleans the Data Values through `ValueCleaner` class:
+    - _RemoveDuplicateValues_
+    - _RemoveNanValues_
 
+Then After all data Checking and Cleansing done, It resample new clean data 
+- to 5 minutes resolution
+- add two new properties to data based on **resolution** and **Symbol** to 5 min resolution Data
+- rename all columns of 5 min resolution Data to required standard names (via `__monolithColumns(...)`)
+- add two new properties to data based on **resolution** and **Symbol** to original (1 min resolution) Data
+- rename all columns of original Data to required standard names (via `__monolithColumns(...)`)
+- Finally union all Data of two resolutions and returns it
+```python
+    fiveMinResData = resampleDataToFiveMin(dataframe=new_data)
+    
+    __monolithColumns(data_frame=fiveMinResData)
+    
+    fiveMinResData['symbol'] = symbol_name
+    fiveMinResData['resolution'] = '5min'
+    
+    __monolithColumns(data_frame=new_data)
 
-readData:
-reads 
+    new_data['symbol'] = symbol_name
+    new_data['resolution'] = '1min'
+    
+    new_data = new_data.append(fiveMinResData, ignore_index=True)
+    
+    return new_data
+```
+### saveDataToOLTPDatabase
+This function Save the given DataFrame to OLTP database through `oltp_server >> save_to_database`
+
+### archivedNewExtactedData
+This function first select all files that successfully retrived from FTP and make a list of them:
+```python
+next_new_files = [x for x in next_new_files if x not in ignored]
+```
+and then send all files in the list to archive through `filemanager >> archiveFiles`
+
+> Also there is a unused function as `` to save the transformed Data to a CSV file with specific filename. It creates a filename by combining of Symbol Name, lowest timestamp and highest timestamp of the Data, and then save the Data to ***.csv*** format.
+```python
+def saveDataToCSVFile(symbol_name, transformed_data):
+    _from = min(transformed_data['timestamp'])
+    _to = max(transformed_data['timestamp'])
+    filename = '{}_{}_{}.csv'.format(symbol_name, _from, _to)
+    transformed_data.to_csv('{}{}'.format(TEMP_PATH,filename))
+    fm.SendFile(TRANSFORMED_PATH, TEMP_PATH,filename)
+```
+
 # LOAD
 this is the transform part
 
