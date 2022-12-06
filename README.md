@@ -1,10 +1,23 @@
 SAMPLE DATA ETL PROJECT
 
 Here you can find some info about this project
-- [About the project](./README.md#about-the-project)
+- [How To Run](./README.md#how-to-run)
+- [About Project Infrastructure](./README.md#about-project-infrastructure)
+- [About Project Structure](./README.md#about-project-structure)
     - [EXTRACT](./README.md#extract)
     - [TRANSFORM](./README.md#transform)
+    - [LOAD](./README.md#load)
 - [About the codes](./README.md#about-the-codes)
+    - [Extract](./README.md#extract-1)
+        - [Part 1](./README.md#part-1-check-time-interval)
+        - [Part 2](./README.md#part-2-extract-new-data)
+        - [Part 3](./README.md#part-3)
+    - [Transform](./README.md#transform-1)
+        - [readData](./README.md#readdata)
+        - [transformData](./README.md#transformdata)
+        - [saveDataToOLTPDatabase](./README.md#savedatatooltpdatabase)
+        - [archivedNewExtactedData](./README.md#archivednewextacteddata)
+    - [Load](./README.md#load-1)
 
 # HOW TO RUN
 Make a clone of project on your computer and open it
@@ -39,7 +52,7 @@ to see whats happening, just look inside ***logs*** table in ***Logs*** database
 
 ---
 ---
-# About the Project Infrastructure
+# About Project Infrastructure
 
 This project containerized with Docker
 Whole Farm consists of:
@@ -67,7 +80,7 @@ Each application runs in its own server. application servers build through Docke
 
 ---
 ---
-# About the Project Structure
+# About Project Structure
 This is a very simple Data ETL project.
 In fintech that process crypto currencies stock market data, access and process crypto's data is a fundamental need.
 
@@ -90,17 +103,17 @@ Each project consists of following files:
     - main module
 - logger.py
     - responsible to saving (log) messages into logserver's Logs database
-- fetcher.py `(only in **extract** project)`
+- fetcher.py `(only in extract project)`
     - responsible to connect to Web API and extract data from it
 - filemanager.py
     - responsible to connect to FTP server and manage files
-- oltp_server.py `(only in **transform** project)`
+- oltp_server.py `(only in transform project)`
     - responsible to save data in OLTP Server
-- loader.py `(only in **load** project)`
+- loader.py `(only in load project)`
     - responsible to load data from OLTP database to Data Warehouse
-- summary.csv `(only in **extract** project)`
+- summary.csv `(only in extract project)`
     - save some info about newly extracted data for each symbol
-- symbols.csv `(only in **extract** project)`
+- symbols.csv `(only in extract project)`
     - contains Symbols list to process
 
 ## EXTRACT
@@ -118,7 +131,7 @@ About data resource:
 
 Crypto currency symbols simply stores in [symbols.csv](./extract/extract_project/symbols.csv). you can add more currencies in specified format to this file.
 
-After read symbols names from above file, a thread create for each one, so, extract data from Web API executes in parrall.
+After read symbols names from above file, a thread create for each one, so, extract data from Web API executes in paralel.
 
 after extraction, each thread stores extracted data to curresponding .csv file in **files** folder and also stores **last record's timestamp** to [summary.csv](./extract/extract_project/summary.csv) file for the next extraction round (extract records after last stored timestamp)
 
