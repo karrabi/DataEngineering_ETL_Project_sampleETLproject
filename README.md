@@ -323,5 +323,51 @@ def saveDataToCSVFile(symbol_name, transformed_data):
 ```
 
 # LOAD
-this is the transform part
+In this sub-project  inside a forever loop, checks if current time is 58th minutes of a Hour then:
+1. symbols and resolutions Dim tables of Data Warehouse updates through:
+    - update_dim_symbols
+    ```sql
+        INSERT INTO dim_symbols (symbol)
+            select distinct(symbol) from oltp_extracted_candles 
+            where symbol not in (
+                select symbol from dim_symbols
+                );
+    ```
+    - update_dim_resolutions
+    ```sql
+        INSERT INTO dim_resolutions (resolution)
+        select distinct(resolution) from oltp_extracted_candles 
+        where resolution not in (
+            select resolution from dim_resolutions
+            );
+    ```
+2. Data loads from oltp database (`extracted_data`) to olap database (`dw`) through following SQL Query:
+```sql
+INSERT INTO public.fact_candles(
+    open, high, low, close, volume, symbol_id, resolution_id, "timestamp")
+select 
+oec.open, 
+oec.high, 
+oec.low, 
+oec.close,
+oec.volume,
+ds.id as symbol_id,
+dr.id as resolution_id, 
+oec.timestamp
+from
+oltp_extracted_candles as oec
+left outer join
+dim_symbols as ds
+on
+oec.symbol = ds.symbol
+left outer join 
+dim_resolutions as dr
+on oec.resolution = dr.resolution
+where isloaded=False;
+
+update 
+oltp_extracted_candles
+set isloaded=True
+where isloaded=False;
+```
 
