@@ -33,7 +33,7 @@ in pgadmin 3 database servers can easily add by its names:
     -   password:   ***postgrespassword***
 
 FTP Server is accessible by: ftp://localhost
-
+![schematic](./docs/schematic.png)
 to see whats happening, just look inside ***logs*** table in ***Logs*** database in ***logserver***
 
 
