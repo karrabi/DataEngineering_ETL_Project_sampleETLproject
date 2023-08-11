@@ -1,6 +1,6 @@
 # Sample ETL Project
 
-Welcome to the **Sample ETL Project** repository! This project showcases an end-to-end data pipeline, demonstrating the process of Extracting, Transforming, and Loading (ETL) data from an FTP data source to an OLAP data warehouse, all within a containerized Docker environment.
+Welcome to the **Sample ETL Project** repository! This project showcases an end-to-end data pipeline, based on this [BRD](./BRD.md) demonstrating the process of Extracting, Transforming, and Loading (ETL) data from an FTP data source to an OLAP data warehouse, all within a containerized Docker environment.
 
 ## Introduction
 
