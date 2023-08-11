@@ -1,6 +1,13 @@
-SAMPLE DATA ETL PROJECT
+# Sample ETL Project
 
-Here you can find some info about this project
+Welcome to the **Sample ETL Project** repository! This project showcases an end-to-end data pipeline, demonstrating the process of Extracting, Transforming, and Loading (ETL) data from an FTP data source to an OLAP data warehouse, all within a containerized Docker environment.
+
+## Introduction
+
+The **Sample ETL Project** provides a hands-on example of building a containerized ETL pipeline. It covers the complete lifecycle of data movement from an FTP server to an OLAP data warehouse. This project is intended to help you understand the principles of ETL and Docker containerization.
+
+
+## Table of Contents
 - [How To Run](./README.md#how-to-run)
 - [About Project Infrastructure](./README.md#about-project-infrastructure)
 - [About Project Structure](./README.md#about-project-structure)
@@ -383,3 +390,20 @@ oltp_extracted_candles
 set isloaded=True
 where isloaded=False;
 ```
+
+## Contributing
+
+Contributions are welcome! If you find issues, want to enhance the project, or improve the documentation, please open an issue or submit a pull request.
+
+When contributing, ensure your changes align with the project's goals and guidelines. Also, update the documentation to reflect any significant modifications.
+
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE). You are free to use, modify, and distribute the code as per the terms of this license.
+
+---
+
+Explore the world of ETL and containerization with the **Sample ETL Project**. Gain insights into data movement and transformation within a Dockerized environment.
+
+For any questions or further assistance, please feel free to contact [a.karrabi@gmail.com](mailto:a.karrabi@gmail.com).
+
